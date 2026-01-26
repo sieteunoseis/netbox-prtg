@@ -1,0 +1,221 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        {% if error %}
+        <!-- Configuration Error -->
+        <div class="alert alert-warning">
+            <i class="mdi mdi-alert"></i> {{ error }}
+        </div>
+
+        {% elif not_found %}
+        <!-- Device Not Found in PRTG -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-monitor-dashboard"></i> PRTG Monitoring
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-3">
+                    <i class="mdi mdi-information-outline"></i>
+                    {% if is_vc_member %}
+                    Virtual Chassis <strong>{{ vc_name }}</strong> not found in PRTG.
+                    <br><small class="text-muted">This device is member of VC "{{ vc_name }}" - the whole stack will be monitored as one device.</small>
+                    {% else %}
+                    Device <strong>{{ search_term }}</strong> not found in PRTG.
+                    {% endif %}
+                </div>
+
+                <!-- Export to PRTG -->
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="mdi mdi-export"></i> Export to PRTG
+                        </h6>
+                        <p class="card-text small text-muted mb-3">
+                            {% if is_vc_member %}
+                            Create the virtual chassis stack in PRTG with auto-discovery enabled.
+                            {% else %}
+                            Create this device in PRTG with auto-discovery enabled.
+                            {% endif %}
+                            The device will be added to the "NetBox Import" group.
+                        </p>
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <strong>Device Name:</strong> {{ export_name }}<br>
+                                <strong>Host:</strong> {{ export_host }}
+                                {% if is_vc_member and vc_master %}
+                                <span class="badge bg-info text-dark ms-1">VC Master IP</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <button type="button" class="btn btn-success" id="export-to-prtg-btn">
+                            <i class="mdi mdi-plus-circle"></i> Export {% if is_vc_member %}Stack{% else %}Device{% endif %} to PRTG
+                        </button>
+                        <div id="export-result" class="mt-2" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- PRTG Monitoring Summary -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-monitor-dashboard"></i> PRTG Monitoring
+                    {% if is_vc_member %}
+                    <span class="badge bg-info text-dark ms-2">Virtual Chassis</span>
+                    {% endif %}
+                </h5>
+                <a href="{{ prtg_device_url }}" target="_blank" class="btn btn-sm btn-primary">
+                    <i class="mdi mdi-open-in-new"></i> View in PRTG
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Device Info -->
+                <div class="mb-3">
+                    <small class="text-muted">
+                        PRTG Device: <strong>{{ prtg_device.name }}</strong>
+                        {% if prtg_device.group %}
+                        <span class="ms-2">| Group: {{ prtg_device.group }}</span>
+                        {% endif %}
+                        {% if is_vc_member %}
+                        <br>NetBox VC: <strong>{{ vc_name }}</strong>
+                        {% if vc_master %}(Master: {{ vc_master.name }}){% endif %}
+                        {% endif %}
+                    </small>
+                </div>
+
+                <!-- Sensor Status Summary -->
+                <div class="row text-center mb-4">
+                    <div class="col">
+                        <div class="card border-0">
+                            <div class="card-body py-3">
+                                <span class="badge bg-success text-white fs-1 px-4 py-3">{{ summary.up }}</span>
+                                <div class="mt-2 fw-bold">Up</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card border-0">
+                            <div class="card-body py-3">
+                                <span class="badge bg-warning text-dark fs-1 px-4 py-3">{{ summary.warning }}</span>
+                                <div class="mt-2 fw-bold">Warning</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card border-0">
+                            <div class="card-body py-3">
+                                <span class="badge bg-danger text-white fs-1 px-4 py-3">{{ summary.down }}</span>
+                                <div class="mt-2 fw-bold">Down</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card border-0">
+                            <div class="card-body py-3">
+                                <span class="badge bg-secondary text-white fs-1 px-4 py-3">{{ summary.paused }}</span>
+                                <div class="mt-2 fw-bold">Paused</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if summary.unusual > 0 %}
+                    <div class="col">
+                        <div class="card border-0">
+                            <div class="card-body py-3">
+                                <span class="badge text-white fs-1 px-4 py-3" style="background-color: #e67e22;">{{ summary.unusual }}</span>
+                                <div class="mt-2 fw-bold">Unusual</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Total Sensors -->
+                <div class="text-center border-top pt-3">
+                    <span class="text-muted">Total Sensors: </span>
+                    <span class="fw-bold fs-5">{{ summary.total }}</span>
+                </div>
+
+                <!-- Cache Status -->
+                <div class="mt-3 text-center">
+                    {% if cached %}
+                    <small class="text-muted">
+                        <i class="mdi mdi-cached"></i> Cached data
+                    </small>
+                    {% else %}
+                    <small class="text-muted">
+                        <i class="mdi mdi-check-circle"></i> Fresh data
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if not_found %}
+<script>
+document.getElementById('export-to-prtg-btn').addEventListener('click', function() {
+    const btn = this;
+    const resultDiv = document.getElementById('export-result');
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Exporting...';
+    resultDiv.style.display = 'none';
+
+    {% if is_vm %}
+    const exportUrl = '{% url "plugins:netbox_prtg:export_vm" object.pk %}';
+    {% else %}
+    const exportUrl = '{% url "plugins:netbox_prtg:export_device" object.pk %}';
+    {% endif %}
+
+    fetch(exportUrl, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        resultDiv.style.display = 'block';
+        if (data.success) {
+            resultDiv.innerHTML = '<div class="alert alert-success">' +
+                '<i class="mdi mdi-check-circle"></i> ' + data.message +
+                (data.device_url ? ' <a href="' + data.device_url + '" target="_blank">View in PRTG</a>' : '') +
+                '</div>';
+            btn.innerHTML = '<i class="mdi mdi-check"></i> Exported';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-secondary');
+            // Reload page after 2 seconds to show the device
+            setTimeout(function() {
+                window.location.reload();
+            }, 2000);
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">' +
+                '<i class="mdi mdi-alert-circle"></i> ' + data.error +
+                (data.device_url ? ' <a href="' + data.device_url + '" target="_blank">View existing device</a>' : '') +
+                '</div>';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="mdi mdi-plus-circle"></i> Export to PRTG';
+        }
+    })
+    .catch(error => {
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<div class="alert alert-danger">' +
+            '<i class="mdi mdi-alert-circle"></i> Error: ' + error.message +
+            '</div>';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="mdi mdi-plus-circle"></i> Export to PRTG';
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

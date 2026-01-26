@@ -1,0 +1,150 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+
+{% block title %}PRTG Settings{% endblock %}
+
+{% block header %}
+<h1 class="ps-3 pt-2"><i class="mdi mdi-cog"></i> PRTG Plugin Configuration</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Connection Status -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-connection"></i> Connection Status
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if not configured %}
+                <div class="alert alert-warning mb-0">
+                    <i class="mdi mdi-alert"></i>
+                    PRTG is not configured. Add configuration to NetBox's <code>configuration.py</code> file.
+                </div>
+                {% elif connection_status.success %}
+                <div class="alert alert-success mb-0">
+                    <i class="mdi mdi-check-circle"></i>
+                    {{ connection_status.message }}
+                </div>
+                {% else %}
+                <div class="alert alert-danger mb-0">
+                    <i class="mdi mdi-alert-circle"></i>
+                    Connection failed: {{ connection_status.message }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Current Configuration -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-cog"></i> Current Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <tbody>
+                        <tr>
+                            <th style="width: 200px;">PRTG Server URL</th>
+                            <td>
+                                {% if config.prtg_url %}
+                                <a href="{{ config.prtg_url }}" target="_blank">{{ config.prtg_url }}</a>
+                                {% else %}
+                                <span class="text-muted">Not configured</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>API Token</th>
+                            <td>
+                                {% if config.prtg_api_token %}
+                                <span class="text-success"><i class="mdi mdi-check"></i> Configured</span>
+                                {% else %}
+                                <span class="text-muted">Not configured</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Timeout</th>
+                            <td>{{ config.timeout|default:"30" }} seconds</td>
+                        </tr>
+                        <tr>
+                            <th>Cache Timeout</th>
+                            <td>{{ config.cache_timeout|default:"60" }} seconds</td>
+                        </tr>
+                        <tr>
+                            <th>Verify SSL</th>
+                            <td>
+                                {% if config.verify_ssl %}
+                                <span class="text-success"><i class="mdi mdi-check"></i> Yes</span>
+                                {% else %}
+                                <span class="text-warning"><i class="mdi mdi-alert"></i> No (insecure)</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Configuration Instructions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-help-circle"></i> Configuration Instructions
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>To configure the PRTG plugin, add the following to your NetBox <code>configuration.py</code> file:</p>
+                <pre class="bg-dark text-light p-3 rounded"><code>PLUGINS_CONFIG = {
+    'netbox_prtg': {
+        'prtg_url': 'https://prtg.example.com',
+        'prtg_api_token': 'your-api-token-here',
+        'timeout': 30,
+        'cache_timeout': 60,
+        'verify_ssl': True,
+    }
+}</code></pre>
+                <p class="mt-3 mb-0">
+                    <strong>Note:</strong> After updating the configuration, restart NetBox to apply changes.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Quick Links -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="mdi mdi-link"></i> Quick Links
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    {% if config.prtg_url %}
+                    <li class="mb-2">
+                        <a href="{{ config.prtg_url }}" target="_blank">
+                            <i class="mdi mdi-open-in-new"></i> Open PRTG Server
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="mb-2">
+                        <a href="{% url 'plugins:netbox_prtg:test_connection' %}">
+                            <i class="mdi mdi-connection"></i> Test Connection (JSON)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.paessler.com/manuals/prtg/api_keys" target="_blank">
+                            <i class="mdi mdi-book-open-variant"></i> PRTG API Keys Documentation
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
