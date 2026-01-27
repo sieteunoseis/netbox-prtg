@@ -1,16 +1,22 @@
 # NetBox PRTG Plugin
 
-[![PyPI version](https://img.shields.io/pypi/v/netbox-prtg)](https://pypi.org/project/netbox-prtg/)
-[![Python versions](https://img.shields.io/pypi/pyversions/netbox-prtg)](https://pypi.org/project/netbox-prtg/)
-[![License](https://img.shields.io/github/license/sieteunoseis/netbox-prtg)](https://github.com/sieteunoseis/netbox-prtg/blob/main/LICENSE)
+<img src="docs/icon.png" alt="NetBox PRTG Plugin" width="100" align="right">
 
 A NetBox plugin that displays PRTG Network Monitor status on Device and Virtual Machine detail pages.
+
+![NetBox Version](https://img.shields.io/badge/NetBox-4.0+-blue)
+![Python Version](https://img.shields.io/badge/Python-3.10+-green)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CI](https://github.com/sieteunoseis/netbox-prtg/actions/workflows/ci.yml/badge.svg)](https://github.com/sieteunoseis/netbox-prtg/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/netbox-prtg)](https://pypi.org/project/netbox-prtg/)
 
 ## Features
 
 - **Device Tab**: Shows PRTG monitoring summary on device detail pages
 - **Virtual Machine Tab**: Shows PRTG monitoring summary on VM detail pages
 - **Sensor Summary**: Displays sensor counts by status (Up, Warning, Down, Paused)
+- **Export to PRTG**: Create devices in PRTG directly from NetBox with auto-discovery
+- **Virtual Chassis Support**: Monitors entire stack using VC name and master IP
 - **Direct Links**: Quick link to view the device in PRTG
 - **Caching**: Configurable caching to minimize API calls
 - **Custom Field**: Optional `prtg_device_id` field for explicit device mapping
@@ -20,14 +26,25 @@ A NetBox plugin that displays PRTG Network Monitor status on Device and Virtual 
 ### Device Tab
 Shows sensor status summary with color-coded badges for quick status overview.
 
+![Device Tab](screenshots/netbox-prtg-device.png)
+
+### Export to PRTG
+Export devices from NetBox to PRTG with one click.
+
+![Export](screenshots/netbox-prtg-export.png)
+
 ### Settings Page
 Displays current configuration and connection status.
+
+![Settings Page](screenshots/netbox-prtg-settings.png)
 
 ## Requirements
 
 - NetBox 4.0.0 or higher
 - PRTG Network Monitor with API access
 - PRTG API Token
+
+> **Note:** This plugin is developed and tested exclusively on NetBox 4.x. It is not compatible with NetBox 3.x due to API and model changes.
 
 ## Installation
 
@@ -92,11 +109,29 @@ The plugin matches NetBox devices to PRTG devices by hostname. The device name i
 
 For explicit mapping, you can set the `prtg_device_id` custom field on a device with the PRTG object ID.
 
+### Virtual Chassis Support
+
+For devices that are members of a Virtual Chassis (VC), the plugin:
+- Uses the **VC name** for PRTG device lookup/export (not individual member names)
+- Uses the **VC master's IP address** as the host for monitoring
+- Displays VC information in the PRTG tab
+
+This allows you to monitor an entire switch stack as a single PRTG device.
+
 ### Viewing Monitoring Status
 
 1. Navigate to any device or virtual machine detail page
 2. Click the **PRTG** tab
 3. View the sensor status summary
+
+### Exporting Devices to PRTG
+
+When a device is not found in PRTG, you can export it directly:
+
+1. Click the **Export to PRTG** button
+2. The device is created in the "NetBox Import" group
+3. Auto-discovery runs to detect available sensors
+4. Move the device to the appropriate group in PRTG as needed
 
 ### Status Indicators
 
@@ -142,11 +177,13 @@ The plugin uses the following PRTG API endpoints:
 - `GET /api/status.json` - Test connection
 - `GET /api/table.json?content=devices` - Find devices by hostname
 - `GET /api/table.json?content=sensors` - Get device sensors
+- `GET /api/table.json?content=groups` - Find groups
+- `GET /api/addgroup.htm` - Create groups
+- `GET /api/adddevice2.htm` - Create devices with auto-discovery
 
 ## Future Enhancements
 
 - [ ] Detailed sensor list view
-- [ ] Export devices from NetBox to PRTG
 - [ ] Sensor alerts history
 - [ ] Bulk device status view
 - [ ] Conditional tab visibility
@@ -164,4 +201,6 @@ Apache License 2.0
 - [GitHub Repository](https://github.com/sieteunoseis/netbox-prtg)
 - [PyPI Package](https://pypi.org/project/netbox-prtg/)
 - [Issue Tracker](https://github.com/sieteunoseis/netbox-prtg/issues)
+- [Wiki](https://github.com/sieteunoseis/netbox-prtg/wiki)
+- [Changelog](https://github.com/sieteunoseis/netbox-prtg/blob/main/CHANGELOG.md)
 - [PRTG API Documentation](https://www.paessler.com/manuals/prtg/http_api)
