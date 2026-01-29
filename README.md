@@ -1,6 +1,6 @@
 # NetBox PRTG Plugin
 
-<img src="docs/icon.png" alt="NetBox PRTG Plugin" width="100" align="right">
+<img src="https://raw.githubusercontent.com/sieteunoseis/netbox-prtg/main/docs/icon.png" alt="NetBox PRTG Plugin" width="100" align="right">
 
 A NetBox plugin that displays PRTG Network Monitor status on Device and Virtual Machine detail pages.
 
@@ -32,6 +32,11 @@ Shows sensor status summary with color-coded badges for quick status overview.
 Export devices from NetBox to PRTG with one click.
 
 ![Export](https://raw.githubusercontent.com/sieteunoseis/netbox-prtg/main/screenshots/netbox-prtg-export.png)
+
+### Export Confirmation
+Confirmation dialog showing device details before export.
+
+![Export Confirmation](https://raw.githubusercontent.com/sieteunoseis/netbox-prtg/main/screenshots/netbox-prtg-export-confirm.png)
 
 ### Settings Page
 Displays current configuration and connection status.
