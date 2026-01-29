@@ -26,17 +26,17 @@ A NetBox plugin that displays PRTG Network Monitor status on Device and Virtual 
 ### Device Tab
 Shows sensor status summary with color-coded badges for quick status overview.
 
-![Device Tab](screenshots/netbox-prtg-device.png)
+![Device Tab](https://raw.githubusercontent.com/sieteunoseis/netbox-prtg/main/screenshots/netbox-prtg-device.png)
 
 ### Export to PRTG
 Export devices from NetBox to PRTG with one click.
 
-![Export](screenshots/netbox-prtg-export.png)
+![Export](https://raw.githubusercontent.com/sieteunoseis/netbox-prtg/main/screenshots/netbox-prtg-export.png)
 
 ### Settings Page
 Displays current configuration and connection status.
 
-![Settings Page](screenshots/netbox-prtg-settings.png)
+![Settings Page](https://raw.githubusercontent.com/sieteunoseis/netbox-prtg/main/screenshots/netbox-prtg-settings.png)
 
 ## Requirements
 
