@@ -323,7 +323,7 @@ class PRTGClient:
             "id": str(parent_group_id) if parent_group_id else "1",  # 1 = Local Probe typically
         }
 
-        url = f"{self.base_url}/api/addgroup.htm"
+        url = f"{self.base_url}/addgroup.htm"
         params["apitoken"] = self.api_token
 
         try:
@@ -377,7 +377,7 @@ class PRTGClient:
             "discoveryschedule_": "0",  # Run immediately
         }
 
-        url = f"{self.base_url}/api/adddevice2.htm"
+        url = f"{self.base_url}/adddevice2.htm"
         params["apitoken"] = self.api_token
 
         try:
