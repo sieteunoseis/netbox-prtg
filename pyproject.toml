@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "netbox-prtg"
-version = "0.2.1"
+version = "0.2.2"
 description = "NetBox plugin to display PRTG monitoring status on device pages"
 readme = "README.md"
 license = {text = "Apache-2.0"}

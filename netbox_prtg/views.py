@@ -107,6 +107,7 @@ class DevicePRTGView(generic.ObjectView):
         ).get(pk=pk)
         context = {
             "object": device,
+            "tab": self.tab,
         }
 
         # Get PRTG client
@@ -187,6 +188,7 @@ class VMPRTGView(generic.ObjectView):
         vm = VirtualMachine.objects.get(pk=pk)
         context = {
             "object": vm,
+            "tab": self.tab,
             "is_vm": True,
         }
 
