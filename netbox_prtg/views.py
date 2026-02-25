@@ -96,7 +96,7 @@ class DevicePRTGView(generic.ObjectView):
     template_name = "netbox_prtg/device_tab.html"
     tab = ViewTab(
         label="PRTG",
-        weight=9100,
+        weight=9006,
         permission="dcim.view_device",
         hide_if_empty=False,
     )
@@ -179,7 +179,7 @@ class VMPRTGView(generic.ObjectView):
     template_name = "netbox_prtg/device_tab.html"
     tab = ViewTab(
         label="PRTG",
-        weight=9100,
+        weight=9006,
         permission="virtualization.view_virtualmachine",
         hide_if_empty=False,
     )

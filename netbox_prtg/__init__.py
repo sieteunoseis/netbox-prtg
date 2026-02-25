@@ -10,7 +10,7 @@ import logging
 from django.db.models.signals import post_migrate
 from netbox.plugins import PluginConfig
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 logger = logging.getLogger(__name__)
 
@@ -77,10 +77,10 @@ class PRTGConfig(PluginConfig):
     """Plugin configuration for NetBox PRTG integration."""
 
     name = "netbox_prtg"
-    verbose_name = "PRTG Monitoring"
+    verbose_name = "NetBox PRTG"
     description = "Display PRTG monitoring status on device pages"
     version = __version__
-    author = "sieteunoseis"
+    author = "Jeremy Worden"
     author_email = "jeremy.worden@gmail.com"
     base_url = "prtg"
     min_version = "4.0.0"
