@@ -1,0 +1,54 @@
+{% load i18n %}
+
+{% if error %}
+  <div class="text-center py-2">
+    <span class="text-danger">
+      <i class="mdi mdi-alert"></i> {{ error }}
+    </span>
+  </div>
+{% elif statuses %}
+  <div class="d-flex flex-wrap justify-content-center gap-3 py-2">
+    {% for status in statuses %}
+      <div class="text-center">
+        {% if status.bg_class %}
+          <span class="badge {{ status.bg_class }} {{ status.text_class }} fs-4 px-3 py-2">
+            {{ status.count }}
+          </span>
+        {% else %}
+          <span class="badge {{ status.text_class }} fs-4 px-3 py-2" style="background-color: #e67e22;">
+            {{ status.count }}
+          </span>
+        {% endif %}
+        <div class="mt-1 small fw-bold text-muted">{{ status.label }}</div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="text-center border-top pt-2 mt-2">
+    <span class="text-muted small">{% trans "Total Sensors" %}: </span>
+    <span class="fw-bold">{{ total }}</span>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+    {% if cached %}
+      <small class="text-muted">
+        <i class="mdi mdi-cached"></i> {% trans "Cached" %}
+      </small>
+    {% else %}
+      <small class="text-muted">
+        <i class="mdi mdi-check-circle"></i> {% trans "Live" %}
+      </small>
+    {% endif %}
+
+    {% if prtg_url %}
+      <a href="{{ prtg_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+        <i class="mdi mdi-open-in-new"></i> {% trans "PRTG" %}
+      </a>
+    {% endif %}
+  </div>
+{% else %}
+  <p class="text-center text-muted py-2">
+    <i class="mdi mdi-information-outline"></i>
+    {% trans "No sensor data available." %}
+  </p>
+{% endif %}

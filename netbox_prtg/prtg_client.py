@@ -255,6 +255,71 @@ class PRTGClient:
 
         return summary
 
+    def get_aggregate_sensor_summary(self, cache_timeout: int = 300) -> dict:
+        """
+        Get aggregate sensor counts across the entire PRTG instance.
+
+        Uses table.json?content=sensors without a device filter to retrieve
+        all sensors in a single API call. Results are cached.
+
+        Args:
+            cache_timeout: Cache duration in seconds (default 300).
+
+        Returns:
+            dict with {up, warning, down, paused, unusual, unknown, total, cached}
+            or {error: "message"} on failure.
+        """
+        cache_key = "prtg_aggregate_sensor_summary"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            cached["cached"] = True
+            return cached
+
+        params = {
+            "content": "sensors",
+            "columns": "status,status_raw",
+            "count": "*",
+        }
+
+        result = self._make_request("/api/table.json", params)
+
+        if "error" in result:
+            logger.warning(f"Failed to get aggregate sensor summary: {result['error']}")
+            return {"error": result["error"]}
+
+        sensors = result.get("sensors", [])
+
+        summary = {
+            "up": 0,
+            "warning": 0,
+            "down": 0,
+            "paused": 0,
+            "unusual": 0,
+            "unknown": 0,
+            "total": len(sensors),
+            "cached": False,
+        }
+
+        for sensor in sensors:
+            status = sensor.get("status", "").lower()
+            status_raw = sensor.get("status_raw", 0)
+
+            if "up" in status or status_raw == 3:
+                summary["up"] += 1
+            elif "warning" in status or status_raw == 4:
+                summary["warning"] += 1
+            elif "down" in status or status_raw == 5:
+                summary["down"] += 1
+            elif "paused" in status or status_raw in (7, 8, 9, 11, 12):
+                summary["paused"] += 1
+            elif "unusual" in status or status_raw == 10:
+                summary["unusual"] += 1
+            else:
+                summary["unknown"] += 1
+
+        cache.set(cache_key, summary, cache_timeout)
+        return summary
+
     def get_device_url(self, device_id: int) -> str:
         """
         Get the URL to view a device in PRTG web interface.

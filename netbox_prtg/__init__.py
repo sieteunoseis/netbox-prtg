@@ -10,7 +10,7 @@ import logging
 from django.db.models.signals import post_migrate
 from netbox.plugins import PluginConfig
 
-__version__ = "0.2.3"
+__version__ = "0.3.0"
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +101,7 @@ class PRTGConfig(PluginConfig):
         """Register signal to create custom fields after migrations."""
         super().ready()
         post_migrate.connect(create_custom_fields, sender=self)
+        from . import widgets  # noqa: F401
 
 
 config = PRTGConfig
