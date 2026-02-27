@@ -37,17 +37,23 @@ class PRTGStatusWidget(DashboardWidget):
     def render(self, request):
         client = get_client()
         if not client:
-            return render_to_string(self.template_name, {
-                "error": "PRTG not configured. Set prtg_url and prtg_api_token in plugin settings.",
-            })
+            return render_to_string(
+                self.template_name,
+                {
+                    "error": "PRTG not configured. Set prtg_url and prtg_api_token in plugin settings.",
+                },
+            )
 
         cache_timeout = self.config.get("cache_timeout", 300)
         summary = client.get_aggregate_sensor_summary(cache_timeout=cache_timeout)
 
         if "error" in summary:
-            return render_to_string(self.template_name, {
-                "error": summary["error"],
-            })
+            return render_to_string(
+                self.template_name,
+                {
+                    "error": summary["error"],
+                },
+            )
 
         # Build status list with display properties
         status_defs = [
@@ -65,19 +71,24 @@ class PRTGStatusWidget(DashboardWidget):
             # Skip unusual/unknown if zero
             if key in ("unusual", "unknown") and count == 0:
                 continue
-            statuses.append({
-                "key": key,
-                "label": label,
-                "count": count,
-                "bg_class": bg_class,
-                "text_class": text_class,
-            })
+            statuses.append(
+                {
+                    "key": key,
+                    "label": label,
+                    "count": count,
+                    "bg_class": bg_class,
+                    "text_class": text_class,
+                }
+            )
 
         prtg_url = client.base_url
 
-        return render_to_string(self.template_name, {
-            "statuses": statuses,
-            "total": summary.get("total", 0),
-            "prtg_url": prtg_url,
-            "cached": summary.get("cached", False),
-        })
+        return render_to_string(
+            self.template_name,
+            {
+                "statuses": statuses,
+                "total": summary.get("total", 0),
+                "prtg_url": prtg_url,
+                "cached": summary.get("cached", False),
+            },
+        )
