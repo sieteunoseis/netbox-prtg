@@ -419,6 +419,7 @@ class PRTGClient:
         host: str,
         group_id: int,
         auto_discover: bool = True,
+        tags: list = None,
     ) -> dict:
         """
         Create a new device in PRTG.
@@ -441,6 +442,10 @@ class PRTGClient:
             "discoverytype_": "1" if auto_discover else "0",  # 1 = auto-discovery
             "discoveryschedule_": "0",  # Run immediately
         }
+
+        # Add tags from NetBox (space-separated)
+        if tags:
+            params["tags_"] = " ".join(tags)
 
         url = f"{self.base_url}/adddevice2.htm"
         params["apitoken"] = self.api_token
@@ -490,7 +495,7 @@ class PRTGClient:
             logger.error(f"Failed to create PRTG device: {e}")
             return {"error": str(e)}
 
-    def export_device_from_netbox(self, name: str, host: str) -> dict:
+    def export_device_from_netbox(self, name: str, host: str, tags: list = None) -> dict:
         """
         Export a device from NetBox to PRTG.
 
@@ -527,6 +532,7 @@ class PRTGClient:
             host=host,
             group_id=group_id,
             auto_discover=True,
+            tags=tags,
         )
 
         return result

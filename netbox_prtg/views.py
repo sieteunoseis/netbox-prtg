@@ -350,10 +350,17 @@ class ExportDeviceView(LoginRequiredMixin, View):
                     }
                 )
 
+            # Get tags from the NetBox object to export to PRTG
+            try:
+                tags = [tag.name for tag in obj.tags.all()]
+            except Exception:
+                tags = []
+
             # Export to PRTG
             result = client.export_device_from_netbox(
                 name=name,
                 host=host,
+                tags=tags,
             )
 
             if result.get("success"):
