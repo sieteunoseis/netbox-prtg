@@ -8,7 +8,10 @@ import logging
 
 from dcim.models import Device
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.views import View
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
 from virtualization.models import VirtualMachine
@@ -219,6 +222,14 @@ class VMPRTGView(generic.ObjectView):
         if not prtg_device:
             context["not_found"] = True
             context["search_term"] = vm.name
+            # Add export info for the export button
+            context["export_name"] = vm.name
+            if vm.primary_ip4:
+                context["export_host"] = str(vm.primary_ip4.address.ip)
+            elif vm.primary_ip6:
+                context["export_host"] = str(vm.primary_ip6.address.ip)
+            else:
+                context["export_host"] = vm.name
             return render(request, self.template_name, context)
 
         # Get sensor summary
@@ -296,61 +307,62 @@ class TestConnectionView(generic.ObjectView):
         return JsonResponse(result)
 
 
-class ExportDeviceView(generic.ObjectView):
+class ExportDeviceView(LoginRequiredMixin, View):
     """Export a device to PRTG."""
 
-    queryset = Device.objects.none()
-
     def post(self, request, pk):
-        from django.http import JsonResponse
+        try:
+            # Determine if this is a Device or VM based on request path
+            is_vm = "export-vm" in request.path
 
-        # Determine if this is a Device or VM based on request path
-        is_vm = "virtual-machines" in request.path
-
-        if is_vm:
-            obj = VirtualMachine.objects.select_related("primary_ip4", "primary_ip6").get(pk=pk)
-            obj_type = "VM"
-            # VMs don't have virtual chassis
-            name = obj.name
-            if obj.primary_ip4:
-                host = str(obj.primary_ip4.address.ip)
-            elif obj.primary_ip6:
-                host = str(obj.primary_ip6.address.ip)
+            if is_vm:
+                obj = VirtualMachine.objects.select_related("primary_ip4", "primary_ip6").get(pk=pk)
+                obj_type = "VM"
+                # VMs don't have virtual chassis
+                name = obj.name
+                if obj.primary_ip4:
+                    host = str(obj.primary_ip4.address.ip)
+                elif obj.primary_ip6:
+                    host = str(obj.primary_ip6.address.ip)
+                else:
+                    host = obj.name
             else:
-                host = obj.name
-        else:
-            obj = Device.objects.select_related(
-                "virtual_chassis",
-                "virtual_chassis__master",
-                "virtual_chassis__master__primary_ip4",
-                "virtual_chassis__master__primary_ip6",
-                "primary_ip4",
-                "primary_ip6",
-            ).get(pk=pk)
-            obj_type = "Device"
-            # Use get_export_info for proper VC handling
-            name, host, is_vc, vc_master = get_export_info(obj)
-            if is_vc:
-                obj_type = "Virtual Chassis"
+                obj = Device.objects.select_related(
+                    "virtual_chassis",
+                    "virtual_chassis__master",
+                    "virtual_chassis__master__primary_ip4",
+                    "virtual_chassis__master__primary_ip6",
+                    "primary_ip4",
+                    "primary_ip6",
+                ).get(pk=pk)
+                obj_type = "Device"
+                # Use get_export_info for proper VC handling
+                name, host, is_vc, vc_master = get_export_info(obj)
+                if is_vc:
+                    obj_type = "Virtual Chassis"
 
-        client = get_client()
-        if not client:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "error": "PRTG not configured",
-                }
+            client = get_client()
+            if not client:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "PRTG not configured",
+                    }
+                )
+
+            # Export to PRTG
+            result = client.export_device_from_netbox(
+                name=name,
+                host=host,
             )
 
-        # Export to PRTG
-        result = client.export_device_from_netbox(
-            name=name,
-            host=host,
-        )
+            if result.get("success"):
+                logger.info(f"Exported {obj_type} '{name}' to PRTG")
+            else:
+                logger.warning(f"Failed to export {obj_type} '{name}' to PRTG: {result.get('error')}")
 
-        if result.get("success"):
-            logger.info(f"Exported {obj_type} '{name}' to PRTG")
-        else:
-            logger.warning(f"Failed to export {obj_type} '{name}' to PRTG: {result.get('error')}")
+            return JsonResponse(result)
 
-        return JsonResponse(result)
+        except Exception as e:
+            logger.error(f"Export to PRTG failed: {e}")
+            return JsonResponse({"success": False, "error": str(e)})
