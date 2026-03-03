@@ -15,7 +15,6 @@ from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
-
 class PRTGClient:
     """Client for PRTG Network Monitor API."""
 
@@ -495,15 +494,54 @@ class PRTGClient:
             logger.error(f"Failed to create PRTG device: {e}")
             return {"error": str(e)}
 
-    def export_device_from_netbox(self, name: str, host: str, tags: list = None) -> dict:
+    def set_object_property(self, object_id: int, name: str, value: str) -> bool:
+        """
+        Set a property on a PRTG object.
+
+        Args:
+            object_id: PRTG object ID
+            name: Property name (e.g., 'deviceicon', 'tags')
+            value: Property value
+
+        Returns:
+            bool: True if successful
+        """
+        params = {
+            "id": str(object_id),
+            "name": name,
+            "value": value,
+        }
+
+        url = f"{self.base_url}/api/setobjectproperty.htm"
+        params["apitoken"] = self.api_token
+
+        try:
+            response = requests.get(
+                url,
+                params=params,
+                timeout=self.timeout,
+                verify=self.verify_ssl,
+            )
+            response.raise_for_status()
+            return True
+        except requests.RequestException as e:
+            logger.error(f"Failed to set property {name} on object {object_id}: {e}")
+            return False
+
+    def export_device_from_netbox(
+        self, name: str, host: str, tags: list = None, manufacturer: str = None
+    ) -> dict:
         """
         Export a device from NetBox to PRTG.
 
         Creates the device in the 'NetBox Import' group with auto-discovery enabled.
+        Sets the device icon if the manufacturer matches a configured vendor_icons entry.
 
         Args:
             name: Device name from NetBox
             host: IP address or hostname
+            tags: List of tag names to apply
+            manufacturer: Manufacturer name for icon matching
 
         Returns:
             dict: {"success": True, ...} or {"error": "..."}
@@ -534,6 +572,15 @@ class PRTGClient:
             auto_discover=True,
             tags=tags,
         )
+
+        # Set device icon based on manufacturer -> vendor_icons config
+        if result.get("success") and result.get("device_id") and manufacturer:
+            vendor_icons = settings.PLUGINS_CONFIG.get("netbox_prtg", {}).get("vendor_icons", {})
+            icon = vendor_icons.get(manufacturer)
+            if icon:
+                if self.set_object_property(result["device_id"], "deviceicon", icon):
+                    result["icon"] = icon
+                    logger.info(f"Set icon '{icon}' on device '{name}' (manufacturer: {manufacturer})")
 
         return result
 

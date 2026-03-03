@@ -10,7 +10,7 @@ import logging
 from django.db.models.signals import post_migrate
 from netbox.plugins import PluginConfig
 
-__version__ = "0.3.2"
+__version__ = "0.4.0"
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +95,7 @@ class PRTGConfig(PluginConfig):
         "timeout": 30,  # API timeout in seconds
         "cache_timeout": 60,  # Cache sensor data for 60 seconds
         "verify_ssl": True,  # SSL verification (default True for security)
+        "vendor_icons": {},  # Manufacturer name -> PRTG icon filename
     }
 
     def ready(self):

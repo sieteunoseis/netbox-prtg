@@ -316,7 +316,9 @@ class ExportDeviceView(LoginRequiredMixin, View):
             is_vm = "export-vm" in request.path
 
             if is_vm:
-                obj = VirtualMachine.objects.select_related("primary_ip4", "primary_ip6").get(pk=pk)
+                obj = VirtualMachine.objects.select_related(
+                    "primary_ip4", "primary_ip6", "platform",
+                ).get(pk=pk)
                 obj_type = "VM"
                 # VMs don't have virtual chassis
                 name = obj.name
@@ -334,6 +336,7 @@ class ExportDeviceView(LoginRequiredMixin, View):
                     "virtual_chassis__master__primary_ip6",
                     "primary_ip4",
                     "primary_ip6",
+                    "device_type__manufacturer",
                 ).get(pk=pk)
                 obj_type = "Device"
                 # Use get_export_info for proper VC handling
@@ -356,11 +359,20 @@ class ExportDeviceView(LoginRequiredMixin, View):
             except Exception:
                 tags = []
 
+            # Get manufacturer name for icon matching
+            manufacturer = None
+            try:
+                if hasattr(obj, "device_type") and obj.device_type:
+                    manufacturer = obj.device_type.manufacturer.name
+            except Exception:
+                pass
+
             # Export to PRTG
             result = client.export_device_from_netbox(
                 name=name,
                 host=host,
                 tags=tags,
+                manufacturer=manufacturer,
             )
 
             if result.get("success"):
