@@ -8,7 +8,7 @@ import logging
 
 from dcim.models import Device
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
@@ -249,10 +249,10 @@ class VMPRTGView(generic.ObjectView):
         return render(request, self.template_name, context)
 
 
-class PRTGSettingsView(generic.ObjectView):
+class PRTGSettingsView(LoginRequiredMixin, PermissionRequiredMixin, View):
     """Display PRTG plugin settings."""
 
-    queryset = Device.objects.none()
+    permission_required = "netbox_prtg.configure_prtg"
     template_name = "netbox_prtg/settings.html"
 
     def get(self, request):

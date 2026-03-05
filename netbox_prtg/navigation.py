@@ -13,7 +13,7 @@ menu = PluginMenu(
                 PluginMenuItem(
                     link="plugins:netbox_prtg:settings",
                     link_text="Configuration",
-                    permissions=["dcim.view_device"],
+                    permissions=["netbox_prtg.configure_prtg"],
                 ),
             ),
         ),
