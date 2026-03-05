@@ -317,7 +317,9 @@ class ExportDeviceView(LoginRequiredMixin, View):
 
             if is_vm:
                 obj = VirtualMachine.objects.select_related(
-                    "primary_ip4", "primary_ip6", "platform",
+                    "primary_ip4",
+                    "primary_ip6",
+                    "platform",
                 ).get(pk=pk)
                 obj_type = "VM"
                 # VMs don't have virtual chassis

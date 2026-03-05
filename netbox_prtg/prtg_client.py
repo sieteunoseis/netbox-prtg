@@ -15,6 +15,7 @@ from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
+
 class PRTGClient:
     """Client for PRTG Network Monitor API."""
 
@@ -528,9 +529,7 @@ class PRTGClient:
             logger.error(f"Failed to set property {name} on object {object_id}: {e}")
             return False
 
-    def export_device_from_netbox(
-        self, name: str, host: str, tags: list = None, manufacturer: str = None
-    ) -> dict:
+    def export_device_from_netbox(self, name: str, host: str, tags: list = None, manufacturer: str = None) -> dict:
         """
         Export a device from NetBox to PRTG.
 
