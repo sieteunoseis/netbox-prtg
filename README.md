@@ -43,6 +43,11 @@ Displays current configuration and connection status.
 
 ![Settings Page](https://raw.githubusercontent.com/sieteunoseis/netbox-prtg/main/screenshots/netbox-prtg-settings.png)
 
+### Dashboard Widget
+PRTG status widget showing sensor counts by status.
+
+![Dashboard Widget](https://raw.githubusercontent.com/sieteunoseis/netbox-prtg/main/screenshots/netbox-prtg-widget.png)
+
 ## Requirements
 
 - NetBox 4.0.0 or higher
