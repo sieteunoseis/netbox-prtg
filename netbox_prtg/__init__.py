@@ -10,7 +10,7 @@ import logging
 from django.db.models.signals import post_migrate
 from netbox.plugins import PluginConfig
 
-__version__ = "0.4.3"
+__version__ = "0.5.0"
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class PRTGConfig(PluginConfig):
     """Plugin configuration for NetBox PRTG integration."""
 
     name = "netbox_prtg"
-    verbose_name = "NetBox PRTG"
+    verbose_name = "PRTG"
     description = "Display PRTG monitoring status on device pages"
     version = __version__
     author = "Jeremy Worden"
@@ -90,6 +90,8 @@ class PRTGConfig(PluginConfig):
 
     # Default configuration values
     default_settings = {
+        "top_level_menu": True,
+        "tab_weight": 9006,
         "prtg_url": "",  # PRTG server URL (e.g., https://prtg.example.com)
         "prtg_api_token": "",  # API token from PRTG account settings
         "timeout": 30,  # API timeout in seconds

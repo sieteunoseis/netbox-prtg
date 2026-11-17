@@ -21,6 +21,9 @@ from .prtg_client import get_client
 
 logger = logging.getLogger(__name__)
 
+# Tab order on object pages; override with PLUGINS_CONFIG["netbox_prtg"]["tab_weight"]
+TAB_WEIGHT = settings.PLUGINS_CONFIG.get("netbox_prtg", {}).get("tab_weight", 9006)
+
 
 def get_vc_info(device):
     """
@@ -99,7 +102,7 @@ class DevicePRTGView(generic.ObjectView):
     template_name = "netbox_prtg/device_tab.html"
     tab = ViewTab(
         label="PRTG",
-        weight=9006,
+        weight=TAB_WEIGHT,
         permission="dcim.view_device",
         hide_if_empty=False,
     )
@@ -182,7 +185,7 @@ class VMPRTGView(generic.ObjectView):
     template_name = "netbox_prtg/device_tab.html"
     tab = ViewTab(
         label="PRTG",
-        weight=9006,
+        weight=TAB_WEIGHT,
         permission="virtualization.view_virtualmachine",
         hide_if_empty=False,
     )
